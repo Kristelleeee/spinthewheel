@@ -14,17 +14,19 @@ const presenting = () => document.body.classList.contains("present");
 
 /* ---------- prize pool ---------- */
 let uid = 0;
-const mk = (name, weight, color, emoji, top, bottom) =>
-  ({id:++uid, name, weight, color, emoji, top, bottom, img:null});
+const mk = (name, weight, color, emoji, top, bottom, img = null) =>
+  ({id:++uid, name, weight, color, emoji, top, bottom, img});
 
+/* Colours alternate gold / teal around the rim so no two neighbours match.
+   Meme pictures live in ./memes and are referenced by path, not embedded. */
 let items = [
-  mk("KEYCHAINS",     5,  "#416557", "", "nobody:",              "absolutely nobody: me at 2%"),
-  mk("LANYARD",       3,  "#FBC748", "", "when the load hits",   "and it's not even payday"),
-  mk("AIM STICKER",   20, "#FBD36D", "", "one (1) coffee",       "productivity restored"),
-  mk("AWS STICKER",   20, "#53AE9A", "", "mom get the camera",   "i'm on the internet"),
-  mk("SCOPE STICKER", 20, "#7FC9AC", "", "laptop before",        "laptop after"),
-  mk("PINS",          7,  "#3C8C79", "", "could be anything",    "it's probably a rock"),
-  mk("ICON STICKER",  20, "#E8A33D", "", "the wheel has spoken", "and it said no"),
+  mk("LANYARD",       3,  "#416557", "🎀", "3% chance and it hit",   "my neck ate that up",     "memes/lanyard-meme.jfif"),
+  mk("AIM STICKER",   20, "#53AE9A", "🎯", "AIM STICKER SECURED",    "laptop just leveled up",  "memes/aim-meme.jfif"),
+  mk("KEYCHAINS",     5,  "#FBC748", "🔑", "it's a keychain",        "aight. i'll allow it.",   "memes/keychain-meme.jfif"),
+  mk("AWS STICKER",   20, "#53AE9A", "☁️", "the AWS sticker dropped", "the cloud provides 🙏",   "memes/aws-meme.jfif"),
+  mk("SCOPE STICKER", 20, "#FBC748", "🔭", "the scope sticker",      "it's beautiful. i'm fine.", "memes/scope-meme.jfif"),
+  mk("PINS",          7,  "#53AE9A", "📌", "pins?? at 7%??",         "bag officially secured",  "memes/pins-meme.jfif"),
+  mk("ICON STICKER",  20, "#FBC748", "🚨", "not the ICON STICKER",   "THE MAIN ONE. NO WAY.",   "memes/icon-meme.jfif"),
 ];
 
 /* ---------- sound ---------- */
