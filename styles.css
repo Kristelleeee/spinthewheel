@@ -40,12 +40,23 @@ body::before{
   background-image:radial-gradient(rgba(255,255,255,.055) 1px, transparent 1px);
   background-size:5px 5px;mix-blend-mode:overlay;
 }
-/* faint black mark washed across the felt */
-body::after{
-  content:"";position:fixed;z-index:0;pointer-events:none;
-  width:min(88vh,900px);aspect-ratio:1;left:50%;top:52%;transform:translate(-50%,-50%);
-  background:url("icon-black.png") center/contain no-repeat;
-  opacity:.035;mix-blend-mode:multiply;
+/* ambient backdrop — ICON, SCOPE, AIM and AWS marks drifting on the felt */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;contain:strict}
+.bg img{
+  position:absolute;
+  left:var(--x);top:var(--y);width:var(--s);height:auto;
+  opacity:var(--o,.11);
+  filter:saturate(.85);
+  will-change:transform;
+  animation:drift var(--d,45s) ease-in-out var(--delay,0s) infinite alternate;
+}
+@keyframes drift{
+  from{transform:translate3d(0,0,0) rotate(var(--r,0deg)) scale(1)}
+  to{
+    transform:translate3d(var(--dx,50px), var(--dy,-50px), 0)
+              rotate(calc(var(--r,0deg) + var(--dr,14deg)))
+              scale(1.07);
+  }
 }
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none}
@@ -316,7 +327,7 @@ body.present .memecard .odds{display:none}
 }
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){
-  .rays,.frame .bigemo{animation:none}
+  .rays,.frame .bigemo,.bg img{animation:none}
   .memecard{animation-duration:.01ms}
 }
 @media (max-width:1000px){
