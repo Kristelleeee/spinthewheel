@@ -18,13 +18,13 @@ const mk = (name, weight, color, emoji, top, bottom) =>
   ({id:++uid, name, weight, color, emoji, top, bottom, img:null});
 
 let items = [
-  mk("ICON Hoodie",        2,  "#416557", "🧥", "nobody:",             "absolutely nobody: me at 2%"),
-  mk("₱500 Load",          10, "#FBC748", "💸", "when the load hits",   "and it's not even payday"),
-  mk("Free Coffee",        15, "#FBD36D", "☕", "one (1) coffee",       "productivity restored"),
-  mk("Shoutout on Stream", 20, "#53AE9A", "📣", "mom get the camera",   "i'm on the internet"),
-  mk("Sticker Pack",       8,  "#7FC9AC", "✨", "laptop before",        "laptop after"),
-  mk("Mystery Box",        5,  "#3C8C79", "📦", "could be anything",    "it's probably a rock"),
-  mk("Try Again, Champ",   40, "#E8A33D", "🗿", "the wheel has spoken", "and it said no"),
+  mk("KEYCHAINS",     5,  "#416557", "", "nobody:",              "absolutely nobody: me at 2%"),
+  mk("LANYARD",       3,  "#FBC748", "", "when the load hits",   "and it's not even payday"),
+  mk("AIM STICKER",   20, "#FBD36D", "", "one (1) coffee",       "productivity restored"),
+  mk("AWS STICKER",   20, "#53AE9A", "", "mom get the camera",   "i'm on the internet"),
+  mk("SCOPE STICKER", 20, "#7FC9AC", "", "laptop before",        "laptop after"),
+  mk("PINS",          7,  "#3C8C79", "", "could be anything",    "it's probably a rock"),
+  mk("ICON STICKER",  20, "#E8A33D", "", "the wheel has spoken", "and it said no"),
 ];
 
 /* ---------- sound ---------- */
@@ -85,6 +85,27 @@ function fit(){
 }
 new ResizeObserver(fit).observe($("#wheelwrap"));
 
+/* Break a prize name over as many lines as it needs.
+   Words that are too long for one line get split mid-word rather than clipped. */
+function wrapLabel(text, maxW){
+  const lines = [];
+  let cur = "";
+  for(const word of String(text).split(/\s+/).filter(Boolean)){
+    const test = cur ? cur + " " + word : word;
+    if(cx.measureText(test).width <= maxW){ cur = test; continue; }
+    if(cur){ lines.push(cur); cur = ""; }
+    if(cx.measureText(word).width <= maxW){ cur = word; continue; }
+    let chunk = "";                                   // one very long word
+    for(const ch of word){
+      if(chunk && cx.measureText(chunk + ch).width > maxW){ lines.push(chunk); chunk = ch; }
+      else chunk += ch;
+    }
+    cur = chunk;
+  }
+  if(cur) lines.push(cur);
+  return lines.length ? lines : ["—"];
+}
+
 function draw(){
   const c = size/2, R = c - 11;
   const hubR = size * 0.17;                 // matches --hub: 34% in the stylesheet
@@ -111,23 +132,39 @@ function draw(){
     cx.fillStyle = it.color; cx.fill();
     cx.strokeStyle = "rgba(22,36,30,.5)"; cx.lineWidth = 1.6; cx.stroke();
 
-    if(sweep <= .052) return;               // too thin to letter
+    if(sweep <= .04) return;                // too thin to letter at all
     cx.save(); cx.rotate((a0 + a1) / 2);
     cx.fillStyle = lum(it.color) > .52 ? "#16241E" : "#FBF6E9";
     cx.textAlign = "right"; cx.textBaseline = "middle";
 
-    const pad = Math.max(18, R * .075);
-    const room = R - pad - hubR - 8;        // stop short of the logo hub
-    const fs = Math.max(11, Math.min(R*.085, R*sweep*.5, 28));
-    cx.font = `700 ${fs}px "Space Grotesk", system-ui, sans-serif`;
-    let label = it.name || "—";
-    while(cx.measureText(label).width > room && label.length > 3) label = label.slice(0, -2) + "…";
-    cx.fillText(label, R - pad, 0);
+    const pad  = Math.max(18, R * .075);
+    const room = R - pad - hubR - 8;        // radial run, stopping short of the hub
+    const rMid = (R - pad + hubR + 8) / 2;  // where the block sits
+    const perp = 2 * rMid * Math.sin(sweep/2) * .92;   // sideways room in the slice
 
-    if(showPct && sweep > .18){
+    // shrink until the whole name fits on the lines the slice can hold
+    let fs = Math.min(R * .085, 28), lines = [], lh = 0;
+    for(let pass = 0; pass < 26; pass++){
+      cx.font = `700 ${fs}px "Space Grotesk", system-ui, sans-serif`;
+      lines = wrapLabel(it.name || "—", room);
+      lh = fs * 1.06;
+      if(lines.length * lh + (showPct ? fs*.78 : 0) <= perp || fs <= 9) break;
+      fs -= 1;
+    }
+    const maxLines = Math.max(1, Math.floor((perp - (showPct ? fs*.78 : 0)) / lh));
+    if(lines.length > maxLines){
+      lines = lines.slice(0, maxLines);
+      lines[maxLines-1] = lines[maxLines-1].replace(/.$/, "…");
+    }
+
+    const blockH = lines.length * lh;
+    let y = -(blockH - lh) / 2 - (showPct ? fs*.39 : 0);
+    lines.forEach(line => { cx.fillText(line, R - pad, y); y += lh; });
+
+    if(showPct && sweep > .13){
       cx.font = `500 ${fs*.66}px "Space Grotesk", system-ui, sans-serif`;
       cx.globalAlpha = .66;
-      cx.fillText((sweep/TAU*100).toFixed(1) + "%", R - pad, fs*1.02);
+      cx.fillText((sweep/TAU*100).toFixed(1) + "%", R - pad, y - lh + fs*.94);
       cx.globalAlpha = 1;
     }
     cx.restore();
